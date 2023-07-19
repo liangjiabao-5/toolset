@@ -1,0 +1,53 @@
+#与docker引擎版本对应
+version: "3.8"
+
+# 管理一组服务
+services: 
+  toolset:
+    build:
+      context: ./toolset/
+      dockerfile: dockerfile
+    ports:
+      - "9090:9090"
+      - "8082:80"
+
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - scriptsFile:/home/scripts
+    networks:
+      - toolsetNW
+
+  mysql:
+    build:
+      context: ./mysql/
+      dockerfile: dockerfile
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      # 数据库名
+      MYSQL_DATABASE: toolset
+
+    # mysql8.0路径 挂载
+    volumes:
+      # 注意中间没有
+      - mysqlData:/var/lib/mysql
+    networks:
+      - toolsetNW
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass 123456
+    networks:
+      - toolsetNW
+
+networks:
+  toolsetNW:
+
+volumes:
+  mysqlData:
+  scriptsFile:
